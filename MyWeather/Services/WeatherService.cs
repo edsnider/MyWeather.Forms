@@ -1,17 +1,14 @@
 ﻿using MyWeather.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MyWeather.Services;
 using static Newtonsoft.Json.JsonConvert;
+using Xamarin.Forms;
 
+[assembly: Dependency(typeof(WeatherService))]
 namespace MyWeather.Services
-{
-  public enum Units
-  {
-    Imperial,
-    Metric
-  }
-
-  public class WeatherService
+{	
+  public class WeatherService : IWeatherService
   {
     const string WeatherCoordinatesUri = "http://api.openweathermap.org/data/2.5/weather?lat={0}&lon={1}&units={2}&appid=fc9f6c524fc093759cd28d41fda89a1b";
     const string WeatherCityUri = "http://api.openweathermap.org/data/2.5/weather?q={0}&units={1}&appid=fc9f6c524fc093759cd28d41fda89a1b";

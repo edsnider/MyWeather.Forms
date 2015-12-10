@@ -13,7 +13,7 @@ namespace MyWeather.ViewModels
 {
   public class WeatherViewModel : INotifyPropertyChanged
   {
-    WeatherService WeatherService { get; } = new WeatherService();
+    IWeatherService _weatherService;
 
     string location = Settings.City;
     public string Location
@@ -39,7 +39,6 @@ namespace MyWeather.ViewModels
       }
     }
 
-
     bool isImperial = Settings.IsImperial;
     public bool IsImperial
     {
@@ -51,8 +50,6 @@ namespace MyWeather.ViewModels
         Settings.IsImperial = value;
       }
     }
-
-
 
     string temp = string.Empty;
     public string Temp
@@ -68,8 +65,6 @@ namespace MyWeather.ViewModels
       set { condition = value; OnPropertyChanged(); }
     }
 
-
-
     bool isBusy = false;
     public bool IsBusy
     {
@@ -83,12 +78,16 @@ namespace MyWeather.ViewModels
       get { return forecast; }
       set { forecast = value; OnPropertyChanged(); }
     }
-
-
+    
     ICommand getWeather;
     public ICommand GetWeatherCommand =>
             getWeather ??
             (getWeather = new Command(async () => await ExecuteGetWeatherCommand()));
+
+	  public WeatherViewModel()
+	  {
+		  _weatherService = DependencyService.Get<IWeatherService>();
+	  }
 
     private async Task ExecuteGetWeatherCommand()
     {
@@ -102,15 +101,15 @@ namespace MyWeather.ViewModels
         var units = IsImperial ? Units.Imperial : Units.Metric;
         if (UseCity)
         {
-          weatherRoot = await WeatherService.GetWeather(Location.Trim(), units);
+          weatherRoot = await _weatherService.GetWeather(Location.Trim(), units);
         }
         else
         {
           var location = await CrossGeolocator.Current.GetPositionAsync(10000);
-          weatherRoot = await WeatherService.GetWeather(location.Latitude, location.Longitude, units);
+          weatherRoot = await _weatherService.GetWeather(location.Latitude, location.Longitude, units);
         }
 
-        Forecast = await WeatherService.GetForecast(weatherRoot.CityId, units);
+        Forecast = await _weatherService.GetForecast(weatherRoot.CityId, units);
 
         var unit = IsImperial ? "F" : "C";
         Temp = $"Temp: {weatherRoot?.MainWeather?.Temperature ?? 0}°{unit}";
